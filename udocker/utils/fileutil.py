@@ -117,6 +117,8 @@ class FileUtil(object):
         for safe_prefix in FileUtil.safe_prefixes:
             if filename.startswith(safe_prefix):
                 return True
+            if filename.startswith(os.path.realpath(safe_prefix)):
+                return True
         return False
 
     def chown(self, uid=0, gid=0, recursive=False):
@@ -126,7 +128,8 @@ class FileUtil(object):
                 for dir_path, dirs, files in os.walk(self.filename):
                     for f_name in dirs + files:
                         os.lchown(dir_path + '/' + f_name, uid, gid)
-            self._chmod(self.filename, uid, gid)
+            else:
+                os.lchown(self.filename, uid, gid)
         except OSError:
             return False
         return True
@@ -200,7 +203,7 @@ class FileUtil(object):
 
     def remove(self, force=False, recursive=False):
         """Delete files or directories"""
-        if not os.path.exists(self.filename):
+        if not os.path.lexists(self.filename):
             pass
         elif self.filename.count("/") < 2:
             Msg().err("Error: delete pathname too short: ", self.filename)
@@ -379,7 +382,6 @@ class FileUtil(object):
     def _find_exec(self, path, rootdir="", volumes="", workdir="",
                    cont2host=False):
         """Find file in a path set such as PATH=/usr/bin:/bin"""
-        # DEBUG
         for directory in path:
             if not directory:
                 continue

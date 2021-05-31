@@ -18,18 +18,20 @@ class Config(object):
     """
     conf = dict()
     conf['verbose_level'] = 3
-    conf['homedir'] = os.path.expanduser("~")
-    conf['topdir'] = conf['homedir'] + "/.udocker"
+    conf['topdir'] = os.path.expanduser("~") + "/.udocker"
+    conf['homedir'] = conf['topdir']
     conf['bindir'] = None
     conf['libdir'] = None
+    conf['docdir'] = None
     conf['reposdir'] = None
     conf['layersdir'] = None
     conf['containersdir'] = None
 
-    # udocker installation tarball
-    conf['tarball_release'] = "1.2.7"
+    # udocker installation tarball the release is the minimum requirement
+    # the actual tarball used in the installation can have a higher version
+    conf['tarball_release'] = "1.2.8"
     conf['tarball'] = (
-        "https://download.ncg.ingrid.pt/webdav/udocker/udocker-englib-1.2.7.tar.gz"
+        "https://download.ncg.ingrid.pt/webdav/udocker/udocker-englib-1.2.8.tar.gz"
     )
     conf['installinfo'] = [
         "https://raw.githubusercontent.com/indigo-dc/udocker/master/messages", ]
@@ -37,7 +39,7 @@ class Config(object):
     conf['autoinstall'] = True
     conf['config'] = "udocker.conf"
     conf['keystore'] = "keystore"
-    conf['tmpdir'] = "/tmp"    # for tmp files only
+    conf['tmpdir'] = os.getenv("TMPDIR", "/tmp")    # for tmp files only
 
     # defaults for container execution
     conf['cmd'] = ["/bin/bash", "-i"]  # Comand to execute
@@ -218,6 +220,7 @@ class Config(object):
         Config.conf['topdir'] = os.getenv("UDOCKER_DIR", Config.conf['topdir'])
         Config.conf['bindir'] = os.getenv("UDOCKER_BIN", Config.conf['bindir'])
         Config.conf['libdir'] = os.getenv("UDOCKER_LIB", Config.conf['libdir'])
+        Config.conf['docdir'] = os.getenv("UDOCKER_DOC", Config.conf['docdir'])
         Config.conf['reposdir'] = \
             os.getenv("UDOCKER_REPOS", Config.conf['reposdir'])
         Config.conf['layersdir'] = \
@@ -254,12 +257,14 @@ class Config(object):
         Config.conf['fakechroot_expand_symlinks'] = \
             os.getenv("UDOCKER_FAKECHROOT_EXPAND_SYMLINKS",
                       str(Config.conf['fakechroot_expand_symlinks'])).lower()
+        os.environ["PROOT_TMP_DIR"] = os.getenv("PROOT_TMP_DIR", Config.conf['tmpdir'])
         # try:
         #     Config.fakechroot_expand_symlinks = {
         #         "false": False, "true": True,
         #         "none": None, }[fakechroot_expand_symlinks]
         # except (KeyError, ValueError):
         #     Msg().err("Error: in UDOCKER_FAKECHROOT_EXPAND_SYMLINKS")
+
 
     def getconf(self, user_cfile="u.conf"):
         """Return all configuration variables"""

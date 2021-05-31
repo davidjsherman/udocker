@@ -245,6 +245,10 @@ class UdockerCLI(object):
         --httpproxy=socks5://user:pass@host:port        :use http proxy
         --httpproxy=socks4://host:port                  :use http proxy
         --httpproxy=socks5://host:port                  :use http proxy
+        --httpproxy=socks4a://user:pass@host:port       :use http proxy
+        --httpproxy=socks5h://user:pass@host:port       :use http proxy
+        --httpproxy=socks4a://host:port                 :use http proxy
+        --httpproxy=socks5h://host:port                 :use http proxy
         """
         pause = not cmdp.get("-a")
         index_url = cmdp.get("--index=")
@@ -470,7 +474,8 @@ class UdockerCLI(object):
                       "Caps Lock ?", l=Msg.WAR)
 
         v2_auth_token = self.dockerioapi.get_v2_login_token(username, password)
-        if self.keystore.put(self.dockerioapi.registry_url, v2_auth_token, ""):
+        if self.keystore.put(self.dockerioapi.registry_url,
+                             v2_auth_token, "") == 0:
             return self.STATUS_OK
 
         Msg().err("Error: invalid credentials")
@@ -505,6 +510,10 @@ class UdockerCLI(object):
         --httpproxy=socks5://user:pass@host:port        :use http proxy
         --httpproxy=socks4://host:port                  :use http proxy
         --httpproxy=socks5://host:port                  :use http proxy
+        --httpproxy=socks4a://user:pass@host:port       :use http proxy
+        --httpproxy=socks5h://user:pass@host:port       :use http proxy
+        --httpproxy=socks4a://host:port                 :use http proxy
+        --httpproxy=socks5h://host:port                 :use http proxy
         --index=https://index.docker.io/v1              :docker index
         --registry=https://registry-1.docker.io         :docker registry
 
@@ -656,6 +665,10 @@ class UdockerCLI(object):
             "devices": {
                 "fl": ("--device=",), "act": "E",
                 "p2": "CMD_OPT", "p3": True
+            },
+            "nobanner": {
+                "fl": ("--nobanner",), "act": 'R',
+                "p2": "CMD_OPT", "p3": False
             }
         }
         for option, cmdp_args in list(cmd_options.items()):
@@ -700,6 +713,7 @@ class UdockerCLI(object):
         --kernel=<kernel-id>       :simulate this Linux kernel version
         --device=/dev/xxx          :pass device to container (R1 mode only)
         --location=<container-dir> :use container outside the repository
+        --nobanner                 :don't print a startup banner
 
         Only available in Rn execution modes:
         --device=/dev/xxx          :pass device to container (R1 mode only)
@@ -1251,7 +1265,8 @@ Examples:
   udocker run --hostauth --hostenv --bindhome  mycontainer
   udocker run --user=root  mycontainer  yum install firefox
   udocker run --hostauth --hostenv --bindhome mycontainer  firefox
-  udocker run --hostauth --hostenv --bindhome mycontainer  /bin/bash -i
+  udocker run --entrypoint="" mycontainer  /bin/bash -i
+  udocker run --entrypoint="/bin/bash" mycontainer -i
 
   udocker clone --name=anotherc mycontainer
   udocker rm anotherc
